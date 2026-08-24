@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ANIME CITY — Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root{
+    --bg:#07070a; --card:#111114; --fg:#f1efe9; --muted:#8f8d92;
+    --border:rgba(241,239,233,0.12); --red:#e01e3c; --red-deep:#6e0f22;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,'Cairo',sans-serif;min-height:100vh;}
+  .wrap{max-width:960px;margin:0 auto;padding:24px 16px 80px;}
+  h1{font-size:22px;margin:0 0 4px;}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:24px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px;margin-bottom:16px;}
+  input,textarea,select{
+    width:100%;background:#0d0d11;border:1px solid var(--border);color:var(--fg);
+    border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:10px;font-family:inherit;
+  }
+  textarea{min-height:70px;resize:vertical;}
+  label{font-size:12px;color:var(--muted);display:block;margin-bottom:4px;}
+  button{
+    background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 16px;
+    font-size:14px;cursor:pointer;font-weight:600;
+  }
+  button.secondary{background:transparent;border:1px solid var(--border);color:var(--fg);}
+  button.danger{background:#3a0d16;color:#ff8fa0;border:1px solid #6e0f22;}
+  button:hover{opacity:.9;}
+  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .item{border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;}
+  .item-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;}
+  .item h3{margin:0 0 4px;font-size:15px;}
+  .item p{margin:0;color:var(--muted);font-size:13px;}
+  .tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+  .tab{padding:8px 14px;border-radius:20px;border:1px solid var(--border);cursor:pointer;font-size:13px;}
+  .tab.active{background:var(--red);border-color:var(--red);}
+  .section{display:none;}
+  .section.active{display:block;}
+  #loginBox{max-width:340px;margin:80px auto;text-align:center;}
+  #loginBox h1{margin-bottom:20px;}
+  .err{color:#ff6b81;font-size:13px;margin-top:8px;min-height:16px;}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+  .badge{background:#0d0d11;border:1px solid var(--border);padding:6px 10px;border-radius:20px;font-size:12px;color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div id="loginBox" class="wrap">
+  <h1>ANIME CITY — Admin</h1>
+  <div class="card">
+    <label>Email</label>
+    <input id="loginEmail" type="email" placeholder="admin@example.com">
+    <label>Password</label>
+    <input id="loginPass" type="password" placeholder="••••••••">
+    <button onclick="doLogin()" style="width:100%">دخول</button>
+    <div class="err" id="loginErr"></div>
+  </div>
+</div>
+
+<div id="adminBox" class="wrap" style="display:none">
+  <div class="topbar">
+    <div>
+      <h1>لوحة التحكم</h1>
+      <div class="sub">Anime City — إدارة المحتوى</div>
+    </div>
+    <div class="row" style="align-items:center">
+      <span class="badge" id="userBadge"></span>
+      <button class="secondary" onclick="doLogout()">خروج</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="news" onclick="switchTab('news')">الأخبار الرئيسية</div>
+    <div class="tab" data-tab="more" onclick="switchTab('more')">أخبار إضافية</div>
+    <div class="tab" data-tab="rank" onclick="switchTab('rank')">الجدول / الترتيب</div>
+    <div class="tab" data-tab="vote" onclick="switchTab('vote')">التصويت</div>
+  </div>
+
+  <!-- ================= FEATURED NEWS ================= -->
+  <div class="section active" id="sec-news">
+    <div class="card">
+      <h3>إضافة خبر رئيسي</h3>
+      <label>التاريخ (مثال: Aug 24, 2026)</label><input id="n-date">
+      <label>التصنيف</label><input id="n-tag">
+      <label>العنوان</label><input id="n-title">
+      <label>النص</label><textarea id="n-excerpt"></textarea>
+      <button onclick="addItem('featuredNews', ['date','tag','title','excerpt'], 'n-')">إضافة</button>
+    </div>
+    <div id="list-news"></div>
+  </div>
+
+  <!-- ================= MORE NEWS ================= -->
+  <div class="section" id="sec-more">
+    <div class="card">
+      <h3>إضافة خبر</h3>
+      <label>التاريخ</label><input id="m-date">
+      <label>العنوان</label><input id="m-title">
+      <button onclick="addItem('moreNews', ['date','title'], 'm-')">إضافة</button>
+    </div>
+    <div id="list-more"></div>
+  </div>
+
+  <!-- ================= RANKING / SCHEDULE ================= -->
+  <div class="section" id="sec-rank">
+    <div class="card">
+      <h3>إضافة جدول ترتيب</h3>
+      <label>التاريخ</label><input id="r-date">
+      <label>اسم الحدث (Event)</label><input id="r-event">
+      <label>الصفوف — كل صف في سطر بالشكل: الاسم أو الاسم,الإحصائية</label>
+      <textarea id="r-rows" placeholder="Raiden
+Arthur, 320 posts
+Arnos"></textarea>
+      <button onclick="addRanking()">إضافة</button>
+    </div>
+    <div id="list-rank"></div>
+  </div>
+
+  <!-- ================= VOTE CANDIDATES ================= -->
+  <div class="section" id="sec-vote">
+    <div class="card">
+      <h3>إضافة مرشح تصويت</h3>
+      <label>الاسم</label><input id="v-name">
+      <label>عدد الأصوات (اختياري، افتراضي 0)</label><input id="v-votes" type="number">
+      <button onclick="addVote()">إضافة</button>
+    </div>
+    <div id="list-vote"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script>
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  document.getElementById('loginErr').textContent = '';
+  auth.signInWithEmailAndPassword(email, pass)
+    .catch(err => { document.getElementById('loginErr').textContent = 'بيانات الدخول غلط أو في مشكلة: ' + err.message; });
+}
+function doLogout(){ auth.signOut(); }
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    document.getElementById('loginBox').style.display = 'none';
+    document.getElementById('adminBox').style.display = 'block';
+    document.getElementById('userBadge').textContent = user.email;
+    loadAll();
+  } else {
+    document.getElementById('loginBox').style.display = 'block';
+    document.getElementById('adminBox').style.display = 'none';
+  }
+});
+
+function switchTab(name){
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById('sec-' + name).classList.add('active');
+}
+
+async function nextOrder(collection){
+  const snap = await db.collection(collection).orderBy('order','desc').limit(1).get();
+  if(snap.empty) return 0;
+  return (snap.docs[0].data().order || 0) + 1;
+}
+
+async function addItem(collection, fields, prefix){
+  const data = {};
+  fields.forEach(f => data[f] = document.getElementById(prefix + f).value.trim());
+  data.order = await nextOrder(collection);
+  await db.collection(collection).add(data);
+  fields.forEach(f => document.getElementById(prefix + f).value = '');
+  loadCollection(collection);
+}
+
+async function addRanking(){
+  const date = document.getElementById('r-date').value.trim();
+  const event = document.getElementById('r-event').value.trim();
+  const rawRows = document.getElementById('r-rows').value.split('\n').map(l => l.trim()).filter(Boolean);
+  const rows = rawRows.map((line, i) => {
+    const [name, stat] = line.split(',').map(s => s && s.trim());
+    const row = { rank: i + 1, name };
+    if(stat) row.stat = stat;
+    return row;
+  });
+  const order = await nextOrder('rankingTables');
+  await db.collection('rankingTables').add({ date, event, rows, order });
+  document.getElementById('r-date').value = '';
+  document.getElementById('r-event').value = '';
+  document.getElementById('r-rows').value = '';
+  loadCollection('rankingTables');
+}
+
+async function addVote(){
+  const name = document.getElementById('v-name').value.trim();
+  const votes = parseInt(document.getElementById('v-votes').value) || 0;
+  const order = await nextOrder('candidates');
+  await db.collection('candidates').add({ id: name.toLowerCase().replace(/\s+/g,'-'), name, votes, order });
+  document.getElementById('v-name').value = '';
+  document.getElementById('v-votes').value = '';
+  loadCollection('candidates');
+}
+
+async function deleteItem(collection, id){
+  if(!confirm('متأكد إنك عايز تحذف ده؟')) return;
+  await db.collection(collection).doc(id).delete();
+  loadCollection(collection);
+}
+
+async function loadCollection(collection){
+  const snap = await db.collection(collection).orderBy('order').get();
+  const map = {
+    featuredNews: { el: 'list-news', render: d => `<h3>${d.title||''}</h3><p>${d.tag||''} · ${d.date||''}</p><p>${d.excerpt||''}</p>` },
+    moreNews:     { el: 'list-more', render: d => `<h3>${d.title||''}</h3><p>${d.date||''}</p>` },
+    rankingTables:{ el: 'list-rank', render: d => `<h3>${d.event||''} — ${d.date||''}</h3><p>${(d.rows||[]).map(r=>r.name).join(' · ')}</p>` },
+    candidates:   { el: 'list-vote', render: d => `<h3>${d.name||''}</h3><p>${d.votes||0} صوت</p>` },
+  }[collection];
+  const container = document.getElementById(map.el);
+  container.innerHTML = '';
+  snap.forEach(doc => {
+    const d = doc.data();
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.innerHTML = `<div class="item-top"><div>${map.render(d)}</div><button class="danger" onclick="deleteItem('${collection}','${doc.id}')">حذف</button></div>`;
+    container.appendChild(div);
+  });
+}
+
+function loadAll(){
+  loadCollection('featuredNews');
+  loadCollection('moreNews');
+  loadCollection('rankingTables');
+  loadCollection('candidates');
+}
+</script>
+</body>
+</html>
