@@ -1,14 +1,11 @@
-// ==========================================================
-// حط هنا الإعدادات اللي هتاخدها من Firebase Console:
-// Project settings (⚙️) -> Your apps -> Web app -> SDK setup and configuration
-// ==========================================================
 const firebaseConfig = {
-  apiKey: "PASTE_API_KEY_HERE",
-  authDomain: "PASTE_AUTH_DOMAIN_HERE",
-  projectId: "PASTE_PROJECT_ID_HERE",
-  storageBucket: "PASTE_STORAGE_BUCKET_HERE",
-  messagingSenderId: "PASTE_SENDER_ID_HERE",
-  appId: "PASTE_APP_ID_HERE"
+  apiKey: "AIzaSyBxZLFU0FdGGR2tJ1-GfuEzLHdPN04zRrU",
+  authDomain: "anime-city-website.firebaseapp.com",
+  projectId: "anime-city-website",
+  storageBucket: "anime-city-website.firebasestorage.app",
+  messagingSenderId: "140061466576",
+  appId: "1:140061466576:web:f80880cdac12facb5e23d5",
+  measurementId: "G-GS3YJXV6T3"
 };
 
 firebase.initializeApp(firebaseConfig);
